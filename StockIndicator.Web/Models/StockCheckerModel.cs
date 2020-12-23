@@ -26,5 +26,8 @@ namespace StockIndicator.Web.Models
         public string Message { get; set; }
         public string URL { get; set; }
         public string SleepTime { get; set; }
+        public bool InStock { get; set; }
+        public string Retailer { get; set; }
+        public bool OOS { get; set; }
     }
 }

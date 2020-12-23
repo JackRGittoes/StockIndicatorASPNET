@@ -16,10 +16,11 @@ namespace StockIndicator.Web.Controllers
         static readonly HttpClient client = new HttpClient();
         static readonly HtmlDocument htmlDoc = new HtmlDocument();
 
+        #region view
         public async Task<IActionResult> IndexAsync(StockCheckerModel model)
         {
             CookieOptions option = new CookieOptions();
-            
+
             if (model.URL != null && model.SleepTime != null)
             {
                 Response.Cookies.Append("URL", model.URL, option);
@@ -44,23 +45,26 @@ namespace StockIndicator.Web.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        public static async Task<string> InStockAsync(StockCheckerModel model, string cookie)
-        {
-            var url = model.URL;
+        #endregion
 
+        #region Stock Checker logic
+
+        [HttpPost]
+        public static async Task<bool> InStockAsync(StockCheckerModel model, string cookie)
+        {
             var retailer = WhatRetailer(cookie);
+            model.Retailer = retailer;
 
             var result = await StockCheckerAsync(cookie, retailer);
             if(result == true)
-            {
-                model.Message = "In stock, last checked " + DateTime.UtcNow.ToLongTimeString();
+            {              
+                model.InStock = true;
             }
             else
             {
-                model.Message = "Out Of Stock, last checked " + DateTime.UtcNow.ToLongTimeString();
+                model.OOS = true;              
             }
-            return model.Message;
+            return model.InStock;
         }
 
 
@@ -69,6 +73,7 @@ namespace StockIndicator.Web.Controllers
             var retailer = " ";
             if (url.ToLower().Contains("currys"))
             {
+                
                 retailer = "currys";
             }
             else if (url.ToLower().Contains("argos"))
@@ -171,8 +176,6 @@ namespace StockIndicator.Web.Controllers
             return false;
         }
 
-       
-
         public static int SleepTimer()
         {
             int sleepTime;
@@ -227,6 +230,7 @@ namespace StockIndicator.Web.Controllers
             }
             return urls;
         }
+        #endregion
     }
 }
 
