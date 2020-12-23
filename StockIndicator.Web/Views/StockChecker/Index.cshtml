@@ -1,34 +1,50 @@
-﻿@{
+﻿
+@model StockIndicator.Web.Models.StockCheckerModel
+@{
     ViewData["Title"] = "StockChecker";
 }
 
-@model StockIndicator.Web.Models.StockCheckerModel
-
-
 <head>
     <meta http-equiv="refresh" content="@Html.DisplayFor(model => model.SleepTime)" />
-
 </head>
 
 <body>
+    @if (Model.URL != null)
+    {
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Checking Stock...</span>
+        </div>
+        <br />
+        <a href="@Model.URL">Product Page</a>
+    }
     <h2>@Html.DisplayFor(model => model.Message)</h2>
-    <h4>Checking URL: @Html.DisplayFor(model => model.URL)</h4>
+
+
 
     <form method="post">
-        Timer <input asp-for="SleepTime" />
-        <br />
-        URL <input asp-for="URL" />
-        <br />
-        <input type="submit" OnClick="" />
+        <div class="form-group">
+            <label>Timer</label>
+            <input class="form-control" asp-for="SleepTime" />
+        </div>
+
+        <div class="form-group">
+            <label> URL</label>
+            <input class="form-control" asp-for="URL" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
     </form>
+
+
+
 </body>
 
-<h1>Counter</h1>
+
 
 <script type="text/javascript">
     let counter = 1;
     setInterval(() => {
-        document.querySelector('h1').innerText = counter;
         counter++;
     }, 1000);
 </script>

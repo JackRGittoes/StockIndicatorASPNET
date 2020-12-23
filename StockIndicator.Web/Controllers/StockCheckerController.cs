@@ -19,10 +19,12 @@ namespace StockIndicator.Web.Controllers
         public async Task<IActionResult> IndexAsync(StockCheckerModel model)
         {
             CookieOptions option = new CookieOptions();
+            
             if (model.URL != null && model.SleepTime != null)
             {
                 Response.Cookies.Append("URL", model.URL, option);
-                Response.Cookies.Append("SLEEP", model.SleepTime, option);
+                Response.Cookies.Append("SLEEP", model.SleepTime.ToString(), option);
+                
             }
 
             var urlCookie = Request.Cookies["URL"];
@@ -34,7 +36,6 @@ namespace StockIndicator.Web.Controllers
                 model.URL = urlCookie;
             }
             
-            model.Message = "Test";
             if(urlCookie != null)
             {
                await InStockAsync(model, urlCookie);
