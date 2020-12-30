@@ -24,10 +24,13 @@ namespace StockIndicator.Web.Models
 
 
         public string Message { get; set; }
-        public string URL { get; set; }
+        public List<string> URLS { get; set; }
         public string SleepTime { get; set; }
-        public bool InStock { get; set; }
-        public string Retailer { get; set; }
+        public List<bool> InStock { get; set; }
+        public List<string> Retailers { get; set; }
         public bool OOS { get; set; }
+        public int NoOfUrls{ get; set;  }
+        public List<string> UrlCookies { get; set; }
+        public List<bool> Results { get; set; }
     }
 }

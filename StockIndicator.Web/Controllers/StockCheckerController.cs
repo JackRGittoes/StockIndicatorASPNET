@@ -19,29 +19,52 @@ namespace StockIndicator.Web.Controllers
         #region view
         public async Task<IActionResult> IndexAsync(StockCheckerModel model)
         {
-            CookieOptions option = new CookieOptions();
+            var urlKey = "URL";
+            var sleepKey = "SLEEP";
+            
 
-            if (model.URL != null && model.SleepTime != null)
+            CookieOptions option = new CookieOptions();
+            if (model.URLS != null && model.SleepTime != null)
             {
-                Response.Cookies.Append("URL", model.URL, option);
-                Response.Cookies.Append("SLEEP", model.SleepTime.ToString(), option);
-                
+                for (int i = 0; i < model.URLS.Count; i++)
+                {
+                    Response.Cookies.Append($"{urlKey}{i}", model.URLS[i], option);
+                }
+                Response.Cookies.Append(sleepKey, model.SleepTime.ToString(), option);
+                Response.Cookies.Append("NoOfUrls", model.URLS.Count.ToString(), option);
             }
 
-            var urlCookie = Request.Cookies["URL"];
-            var sleepCookie = Request.Cookies["SLEEP"];
+            if (model.NoOfUrls == 0)
+            {
+                model.NoOfUrls = Convert.ToInt32(Request.Cookies["NoOfUrls"]);
+            }
 
             if (model.SleepTime == null)
             {
-                model.SleepTime = sleepCookie;
-                model.URL = urlCookie;
-            }
-            
-            if(urlCookie != null)
-            {
-               await InStockAsync(model, urlCookie);
+                model.SleepTime = Request.Cookies[sleepKey];
+                var urls = new List<string>();
+                for (int i = 0; i < model.NoOfUrls; i++)
+                {
+                    var result = Request.Cookies[$"{urlKey}{i}"];
+                    if (result != null)
+                    {
+                        urls.Add(result);
+                    }
+                 }
+                if (urls.Count == 0)
+                {
+
+                }
+                else
+                {
+                    model.URLS = urls;
+                }
             }
 
+           
+            
+           await InStockAsync(model, model.URLS);
+           
             return View(model);
         }
 
@@ -50,21 +73,42 @@ namespace StockIndicator.Web.Controllers
         #region Stock Checker logic
 
         [HttpPost]
-        public static async Task<bool> InStockAsync(StockCheckerModel model, string cookie)
+        public static async Task<bool> InStockAsync(StockCheckerModel model, List<string> urls)
         {
-            var retailer = WhatRetailer(cookie);
-            model.Retailer = retailer;
+            var result = false;
+            var results = new List<bool>();
+            var retailers = new List<string>();
+            var inStock = new List<bool>();
 
-            var result = await StockCheckerAsync(cookie, retailer);
-            if(result == true)
-            {              
-                model.InStock = true;
-            }
-            else
+            try
             {
-                model.OOS = true;              
+                for (int i = 0; i < urls.Count; i++)
+                {
+                    var retailer = WhatRetailer(urls[i]);
+                    result = await StockCheckerAsync(urls[i], retailer);
+                    retailers.Add(retailer);
+                    results.Add(result);
+                }
+
+                if (result == true)
+                {
+                    inStock.Add(true);
+
+                }
+                else
+                {
+                    inStock.Add(false);
+                }
+                model.Retailers = retailers;
+                model.Results = results;
+                model.InStock = inStock;
             }
-            return model.InStock;
+            catch(NullReferenceException ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return true;
         }
 
 

@@ -8,47 +8,65 @@
     <meta http-equiv="refresh" content="@Html.DisplayFor(model => model.SleepTime)" />
 </head>
 
-<body>
-  
-
-        @if (Model.OOS == true)
+<body> 
+    @{ 
+        if(Model.Results != null)
+        { 
+        if (Model.Results.Contains(false))
         {
             <div class="alert alert-danger" role="alert" style="font-weight: bold; color: black;">
-                THE PRODUCT FROM @Model.Retailer.ToUpper() IS CURRENTLY OUT OF STOCK. LAST CHECK: @DateTime.UtcNow.ToLongTimeString()
+                A PRODUCT IS CURRENTLY OUT OF STOCK. LAST CHECK: @DateTime.UtcNow.ToLongTimeString()
             </div>
-        }
+            }
 
-        @if (Model.InStock == true)
-        {
+            if (Model.Results.Contains(true))
+            {
             <div class="alert alert-primary" role="alert">
-                Your <a href="@Model.URL" class="alert-link">Product</a>. From @Model.Retailer is back in stock.
+                ONE OF YOUR PRODUCTS ARE BACK IN STOCK.
             </div>
 
             <audio autoplay>
                 <source type="audio/mp3" src="~/audio/No Copyright _ Oh My God Wow Sound Effect.mp3" />
             </audio>
+
+                }
+            }
         }
 
         <div class="container" style="max-width:50%;">
             <form method="post">
                 <div class="form-group">
-                    <label style="font-weight: bold; color: white;">TIMER</label>
-                    <input class="form-control" asp-for="SleepTime" />
+                    <label style="font-weight: bold; color: white;">NUMBER OF PRODUCTS</label>
+                    <input class="form-control" asp-for="NoOfUrls" />
                 </div>
-
-                <div class="form-group">
-                    <label style="font-weight: bold; color: white;"> URL</label>
-                    <input class="form-control" asp-for="URL" />
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="font-weight: bold; color: white;">TRACK</button>
-                @if (Model.URL != null)
+                @if (Model.NoOfUrls > 0)
                 {
-                    <div class="spinner-border" role="status" style="color:white;">
-                        <span class="sr-only">Checking Stock...</span>
+                    <div class="form-group">
+                        <label style="font-weight: bold; color: white;">TIMER</label>
+                        <input class="form-control" asp-for="SleepTime" />
                     </div>
                 }
-            </form>
+
+                    <div class="form-group">
+                        @if (Model.NoOfUrls > 0)
+                        {
+                            <label style="font-weight: bold; color: white;"> URL</label>
+                        }
+                        @for (int i = 0; i < Model.NoOfUrls; i++)
+                        {
+                            <input class="form-control" asp-for="URLS" value=" " />
+
+                        }
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="font-weight: bold; color: white;">SUBMIT</button>
+                    @if (Model.UrlCookies != null)
+                    {
+                        <div class="spinner-border" role="status" style="color:white;">
+                            <span class="sr-only">Checking Stock...</span>
+                        </div>
+                    }
+                </form>
         </div>
 </body>
 
@@ -62,22 +80,24 @@
                 <th scope="col">STATUS</th>
             </tr>
         </thead>
-        @if (Model.URL != null)
+        @if(Model.URLS != null)
         {
+            for (int i = 0; i < Model.NoOfUrls; i++)
+            {
             <tbody>
                 <tr>
                     <th scope="row">1</th>
                     <td>
-                        <a href="@Model.URL">LINK</a>
+                        <a href="@Model.URLS[i].ToString()">LINK</a>
                     </td>
-                    <td>@Model.Retailer</td>
-                    <td>@Model.InStock</td>
+                    <td>@Model.Retailers[i].ToString()</td>
+                    <td>@Model.Results[i].ToString()</td>
                 </tr>
             </tbody>
+            }
         }
     </table>
 </div>
-
 
 
     <script type="text/javascript">
