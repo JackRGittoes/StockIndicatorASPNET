@@ -21,8 +21,7 @@ namespace StockIndicator.Web.Controllers
         {
             var urlKey = "URL";
             var sleepKey = "SLEEP";
-            
-
+  
             CookieOptions option = new CookieOptions();
             if (model.URLS != null && model.SleepTime != null)
             {
@@ -60,12 +59,10 @@ namespace StockIndicator.Web.Controllers
                     model.URLS = urls;
                 }
             }
-
-           
             
            await InStockAsync(model, model.URLS);
            
-            return View(model);
+           return View(model);
         }
 
         #endregion
