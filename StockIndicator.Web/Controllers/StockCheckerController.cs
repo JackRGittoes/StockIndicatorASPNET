@@ -17,52 +17,70 @@ namespace StockIndicator.Web.Controllers
         static readonly HtmlDocument htmlDoc = new HtmlDocument();
 
         #region view
-        public async Task<IActionResult> IndexAsync(StockCheckerModel model)
+
+        public IActionResult Index()
+        {
+            return View(new StockCheckerModel());
+        }
+        public IActionResult Stop()
+        {
+            CookieOptions option = new CookieOptions();
+            option.Expires = DateTime.Now.AddDays(-1);
+            
+            return View("Index", new StockCheckerModel());
+        }
+
+        public async Task<IActionResult> Start(StockCheckerModel model)
         {
             var urlKey = "URL";
             var sleepKey = "SLEEP";
-  
-            CookieOptions option = new CookieOptions();
-            if (model.URLS != null && model.SleepTime != null)
-            {
-                for (int i = 0; i < model.URLS.Count; i++)
-                {
-                    Response.Cookies.Append($"{urlKey}{i}", model.URLS[i], option);
-                }
-                Response.Cookies.Append(sleepKey, model.SleepTime.ToString(), option);
-                Response.Cookies.Append("NoOfUrls", model.URLS.Count.ToString(), option);
-            }
+            var urls = new List<string>();
 
             if (model.NoOfUrls == 0)
             {
                 model.NoOfUrls = Convert.ToInt32(Request.Cookies["NoOfUrls"]);
-            }
-
-            if (model.SleepTime == null)
-            {
                 model.SleepTime = Request.Cookies[sleepKey];
-                var urls = new List<string>();
-                for (int i = 0; i < model.NoOfUrls; i++)
-                {
-                    var result = Request.Cookies[$"{urlKey}{i}"];
-                    if (result != null)
-                    {
-                        urls.Add(result);
-                    }
-                 }
-                if (urls.Count == 0)
-                {
+            }
+            else
+            {             
+                Cookies(model.URLS, model.SleepTime);
+            }
 
-                }
-                else
+            for (int i = 0; i < model.NoOfUrls; i++)
+            {
+                var cookieResult = Request.Cookies[$"{urlKey}{i}"];
+                if (cookieResult != null)
                 {
-                    model.URLS = urls;
+                    urls.Add(cookieResult);
                 }
             }
-            
-           await InStockAsync(model, model.URLS);
-           
-           return View(model);
+            if (urls.Count >= 1)
+            {
+                model.URLS = urls;                 
+            }
+            await InStockAsync(model, model.URLS);
+            return View("Index", model);
+        }
+
+        public void Cookies(List<String> urls, string sleepTime)
+        {
+            var urlKey = "URL";
+            var sleepKey = "SLEEP";
+
+            CookieOptions option = new CookieOptions();
+            try
+            {
+                for (int i = 0; i < urls.Count; i++)
+                {
+                    Response.Cookies.Append($"{urlKey}{i}", urls[i], option);
+                }
+                Response.Cookies.Append(sleepKey, sleepTime.ToString(), option);
+                Response.Cookies.Append("NoOfUrls", urls.Count.ToString(), option);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         #endregion
@@ -220,6 +238,7 @@ namespace StockIndicator.Web.Controllers
         public static int SleepTimer()
         {
             int sleepTime;
+            
             try
             {
                 Console.WriteLine("Input in Ms how often you want to check for stock (e.g. 5000 = 5 seconds)\nMinimum 5 seconds");
@@ -272,6 +291,8 @@ namespace StockIndicator.Web.Controllers
             return urls;
         }
         #endregion
+
+        
     }
 }
 

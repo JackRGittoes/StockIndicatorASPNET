@@ -47,26 +47,27 @@
                     </div>
                 }
 
-                    <div class="form-group">
-                        @if (Model.NoOfUrls > 0)
-                        {
-                            <label style="font-weight: bold; color: white;"> URL</label>
-                        }
-                        @for (int i = 0; i < Model.NoOfUrls; i++)
-                        {
-                            <input class="form-control" asp-for="URLS" value=" " />
-
-                        }
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="font-weight: bold; color: white;">SUBMIT</button>
-                    @if (Model.UrlCookies != null)
+                <div class="form-group">
+                    @if (Model.NoOfUrls > 0)
                     {
-                        <div class="spinner-border" role="status" style="color:white;">
-                            <span class="sr-only">Checking Stock...</span>
-                        </div>
+                        <label style="font-weight: bold; color: white;"> URL</label>
                     }
-                </form>
+                    @for (int i = 0; i < Model.NoOfUrls; i++)
+                    {
+                        <input class="form-control" asp-for="URLS" value=" " />
+
+                    }
+                </div>
+
+                <button type="submit" asp-action="Start" class="btn btn-primary" style="font-weight: bold; color: white;">START</button>
+                <button type="submit" asp-action="Stop" class="btn btn-primary" style="font-weight: bold; color: white;">STOP</button>
+                @if (Model.UrlCookies != null)
+                {
+                    <div class="spinner-border" role="status" style="color:white;">
+                        <span class="sr-only">Checking Stock...</span>
+                    </div>
+                }
+            </form>
         </div>
 </body>
 
@@ -81,7 +82,7 @@
             </tr>
         </thead>
        
-        @if(Model.URLS != null)
+        @if(Model.URLS != null && Model.Retailers != null )
         {
             for (int i = 0; i < Model.NoOfUrls; i++)
             {
