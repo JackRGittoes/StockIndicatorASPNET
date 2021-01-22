@@ -8,12 +8,14 @@ using System.Threading;
 using System.Net.Http;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace StockIndicator.Web.Controllers
 {
     public class StockCheckerController : Controller
     {
         static readonly HttpClient client = new HttpClient();
+            
         static readonly HtmlDocument htmlDoc = new HtmlDocument();
 
         #region view
@@ -61,7 +63,9 @@ namespace StockIndicator.Web.Controllers
             await InStockAsync(model, model.URLS);
             return View("Index", model);
         }
+        #endregion
 
+        #region Cookies
         public void Cookies(List<String> urls, string sleepTime)
         {
             var urlKey = "URL";
@@ -82,8 +86,9 @@ namespace StockIndicator.Web.Controllers
                 Console.WriteLine(ex);
             }
         }
-
         #endregion
+
+        
 
         #region Stock Checker logic
 
@@ -225,6 +230,10 @@ namespace StockIndicator.Web.Controllers
                         return true;
                     }
                     return false;
+                }
+                catch(WebException ex)
+                {
+                    Console.WriteLine(ex);
                 }
                 IsTrue = true;
             }

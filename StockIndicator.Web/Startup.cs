@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace StockIndicator.Web
@@ -30,6 +31,9 @@ namespace StockIndicator.Web
            HttpContextAccessor>();
 
             services.AddControllersWithViews();
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
