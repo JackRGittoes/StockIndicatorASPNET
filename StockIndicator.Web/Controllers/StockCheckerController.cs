@@ -247,12 +247,13 @@ namespace StockIndicator.Web.Controllers
             while (IsTrue == false)
             {
                 var html = WebResponse(url);
+                var documentNode = htmlDoc.DocumentNode.SelectNodes(node);
                 if (html != null)
                 {
                     htmlDoc.LoadHtml(html);
                     try
                     {
-                        foreach (var item in htmlDoc.DocumentNode.SelectNodes(node))
+                        foreach (var item in documentNode)
                         {
 
                             //If the retailer is argos returns false because we are tracking an out of stock text element
