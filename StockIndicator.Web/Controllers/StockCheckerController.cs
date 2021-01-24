@@ -9,6 +9,8 @@ using System.Net.Http;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.IO;
+using System.Text;
 
 namespace StockIndicator.Web.Controllers
 {
@@ -88,18 +90,44 @@ namespace StockIndicator.Web.Controllers
         }
         #endregion
 
-        
+        public static string WebResponse(string url)
+        {
+            string data = null;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Headers["user-agent"] = "	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
 
-        #region Stock Checker logic
 
-        [HttpPost]
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                Stream receiveStream = response.GetResponseStream();
+                StreamReader readStream = null;
+
+                if (String.IsNullOrWhiteSpace(response.CharacterSet))
+                    readStream = new StreamReader(receiveStream);
+                else
+                    readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+
+                data = readStream.ReadToEnd();
+
+                response.Close();
+                readStream.Close();
+            }
+            return data;
+        }
+
+
+            #region Stock Checker logic
+
+            [HttpPost]
         public static async Task<bool> InStockAsync(StockCheckerModel model, List<string> urls)
         {
             var result = false;
             var results = new List<bool>();
             var retailers = new List<string>();
             var inStock = new List<bool>();
-
+            
             try
             {
                 for (int i = 0; i < urls.Count; i++)
@@ -203,43 +231,46 @@ namespace StockIndicator.Web.Controllers
             bool IsTrue = false;
             while (IsTrue == false)
             {
-                var responseBody = await client.GetStringAsync(url);
-                htmlDoc.LoadHtml(responseBody);
-
-                try
+                var html = WebResponse(url);
+                if (html != null)
                 {
-                    foreach (var item in htmlDoc.DocumentNode.SelectNodes(node))
+                    htmlDoc.LoadHtml(html);
+                    try
                     {
-
-                        //If the retailer is argos returns false because we are tracking an out of stock text element
-                        if (item.InnerText.Contains(nodeContains) && retailer.Contains("argos") || item.InnerText.Contains(nodeContains) && retailer.Contains("game") || item.InnerText.Contains(nodeContains) && retailer.Contains("smyths"))
+                        foreach (var item in htmlDoc.DocumentNode.SelectNodes(node))
                         {
-                            return false;
-                        }
-                        else if (item.InnerText.Contains(nodeContains))
+
+                            //If the retailer is argos returns false because we are tracking an out of stock text element
+                            if (item.InnerText.Contains(nodeContains) && retailer.Contains("argos") || item.InnerText.Contains(nodeContains) && retailer.Contains("game") || item.InnerText.Contains(nodeContains) && retailer.Contains("smyths"))
+                            {
+                                return false;
+                            }
+                            else if (item.InnerText.Contains(nodeContains))
+                            {
+                                return true;
+                            }
+
+                        };
+                    }
+                    catch (NullReferenceException)
+                    {
+                        if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
                         {
                             return true;
                         }
-
-                    };
-                }
-                catch (NullReferenceException)
-                {
-                    if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
-                    {
-                        return true;
+                        return false;
                     }
-                    return false;
+                    catch (WebException ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                    IsTrue = true;
+
                 }
-                catch(WebException ex)
+                if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
                 {
-                    Console.WriteLine(ex);
+                    return true;
                 }
-                IsTrue = true;
-            }
-            if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
-            {
-                return true;
             }
             return false;
         }
