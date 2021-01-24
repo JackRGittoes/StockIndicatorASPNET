@@ -149,7 +149,7 @@ namespace StockIndicator.Web.Controllers
                 for (int i = 0; i < urls.Count; i++)
                 {
                     var retailer = WhatRetailer(urls[i]);
-                    result = await StockCheckerAsync(urls[i], retailer);
+                    result = StockCheckerAsync(urls[i], retailer);
                     retailers.Add(retailer);
                     results.Add(result);
                 }
