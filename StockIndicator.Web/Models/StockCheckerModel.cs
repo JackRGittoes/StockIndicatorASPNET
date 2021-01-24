@@ -20,7 +20,7 @@ namespace StockIndicator.Web.Models
         public const string currysNodeContains = "Add to basket";
         public const string gameNodeContains = "out of stock";
         public const string scanNodeContains = "In stock";
-        public const string smythsNodeContains = "Add To Basket";
+        public const string smythsNodeContains = "In Stock";
 
 
         public string Message { get; set; }
@@ -32,5 +32,6 @@ namespace StockIndicator.Web.Models
         public int NoOfUrls{ get; set;  }
         public List<string> UrlCookies { get; set; }
         public List<bool> Results { get; set; }
+        public bool Stop { get; set; }
     }
 }

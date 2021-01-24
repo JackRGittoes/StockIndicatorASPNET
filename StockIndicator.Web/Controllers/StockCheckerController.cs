@@ -16,8 +16,7 @@ namespace StockIndicator.Web.Controllers
 {
     public class StockCheckerController : Controller
     {
-        static readonly HttpClient client = new HttpClient();
-            
+           
         static readonly HtmlDocument htmlDoc = new HtmlDocument();
 
         #region view
@@ -26,16 +25,29 @@ namespace StockIndicator.Web.Controllers
         {
             return View(new StockCheckerModel());
         }
-        public IActionResult Stop()
+        public IActionResult Stop(StockCheckerModel model)
         {
-            CookieOptions option = new CookieOptions();
-            option.Expires = DateTime.Now.AddDays(-1);
             
-            return View("Index", new StockCheckerModel());
+            CookieOptions option = new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(-1)
+
+            };
+            if (model.URLS != null)
+            {
+                model.URLS.Clear();
+                model.SleepTime = null;
+                model.NoOfUrls = 0;
+                model.Results = null;
+                Response.Cookies.Append("Stop", "true");
+            }
+            
+            return View("Index", model);
         }
 
-        public async Task<IActionResult> Start(StockCheckerModel model)
+        public IActionResult Start(StockCheckerModel model)
         {
+            
             var urlKey = "URL";
             var sleepKey = "SLEEP";
             var urls = new List<string>();
@@ -43,10 +55,11 @@ namespace StockIndicator.Web.Controllers
             if (model.NoOfUrls == 0)
             {
                 model.NoOfUrls = Convert.ToInt32(Request.Cookies["NoOfUrls"]);
-                model.SleepTime = Request.Cookies[sleepKey];
+                model.SleepTime = Request.Cookies[sleepKey];                
             }
-            else
-            {             
+            else if(model.URLS != null)
+            {
+                Response.Cookies.Append("Stop", "false");
                 Cookies(model.URLS, model.SleepTime);
             }
 
@@ -62,7 +75,17 @@ namespace StockIndicator.Web.Controllers
             {
                 model.URLS = urls;                 
             }
-            await InStockAsync(model, model.URLS);
+
+            var cookie = Request.Cookies["Stop"];
+            if (cookie != null && cookie.Contains("true"))
+            {
+                model.Stop = true;
+            }
+            else
+            {
+                model.Stop = false;
+            }
+            InStockAsync(model, model.URLS);
             return View("Index", model);
         }
         #endregion
@@ -137,7 +160,7 @@ namespace StockIndicator.Web.Controllers
             #region Stock Checker logic
 
             [HttpPost]
-        public static async Task<bool> InStockAsync(StockCheckerModel model, List<string> urls)
+        public static bool InStockAsync(StockCheckerModel model, List<string> urls)
         {
             var result = false;
             var results = new List<bool>();
@@ -247,10 +270,11 @@ namespace StockIndicator.Web.Controllers
             while (IsTrue == false)
             {
                 var html = WebResponse(url);
-                 var documentNode = htmlDoc.DocumentNode.SelectNodes(node);
+                
                 if (html != null)
                 {
                     htmlDoc.LoadHtml(html);
+                    var documentNode = htmlDoc.DocumentNode.SelectNodes(node);
                     try
                     {
                         foreach (var item in documentNode)
