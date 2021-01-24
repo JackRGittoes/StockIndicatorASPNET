@@ -207,7 +207,7 @@ namespace StockIndicator.Web.Controllers
             return retailer;
         }
 
-        public static async Task<bool> StockCheckerAsync(string url, string retailer)
+        public static bool StockCheckerAsync(string url, string retailer)
         {
             var node = " ";
             var nodeContains = " ";
