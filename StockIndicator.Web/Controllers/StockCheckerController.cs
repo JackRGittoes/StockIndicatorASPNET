@@ -93,26 +93,42 @@ namespace StockIndicator.Web.Controllers
         public static string WebResponse(string url)
         {
             string data = null;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Headers["user-agent"] = "	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
+            var status = false;
 
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            while (status == false)
             {
-                Stream receiveStream = response.GetResponseStream();
-                StreamReader readStream = null;
+                for (int i = 0; i <= 5; i++)
+                {
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    request.Headers["user-agent"] = "	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                if (String.IsNullOrWhiteSpace(response.CharacterSet))
-                    readStream = new StreamReader(receiveStream);
-                else
-                    readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        Stream receiveStream = response.GetResponseStream();
+                        StreamReader readStream = null;
 
-                data = readStream.ReadToEnd();
+                        if (String.IsNullOrWhiteSpace(response.CharacterSet))
+                            readStream = new StreamReader(receiveStream);
+                        else
+                            readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
 
-                response.Close();
-                readStream.Close();
+                        data = readStream.ReadToEnd();
+
+                        response.Close();
+                        readStream.Close();
+                    }
+
+                    if(data != null)
+                    {
+                        status = true;
+                        break;
+                    }
+                    if(i == 5)
+                    {
+                        status = true;
+                    }
+                }             
             }
             return data;
         }
@@ -158,7 +174,6 @@ namespace StockIndicator.Web.Controllers
 
             return true;
         }
-
 
         public static string WhatRetailer(string url)
         {
