@@ -100,7 +100,7 @@ namespace StockIndicator.Web.Controllers
                 for (int i = 0; i <= 5; i++)
                 {
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Headers["user-agent"] = "	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
+                    request.Headers["user-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
                     if (response.StatusCode == HttpStatusCode.OK)
@@ -247,7 +247,7 @@ namespace StockIndicator.Web.Controllers
             while (IsTrue == false)
             {
                 var html = WebResponse(url);
-                var documentNode = htmlDoc.DocumentNode.SelectNodes(node);
+                 var documentNode = htmlDoc.DocumentNode.SelectNodes(node);
                 if (html != null)
                 {
                     htmlDoc.LoadHtml(html);
@@ -255,38 +255,22 @@ namespace StockIndicator.Web.Controllers
                     {
                         foreach (var item in documentNode)
                         {
-
-                            //If the retailer is argos returns false because we are tracking an out of stock text element
-                            if (item.InnerText.Contains(nodeContains) && retailer.Contains("argos") || item.InnerText.Contains(nodeContains) && retailer.Contains("game") || item.InnerText.Contains(nodeContains) && retailer.Contains("smyths"))
-                            {
-                                return false;
-                            }
-                            else if (item.InnerText.Contains(nodeContains))
+                            if (item.InnerText.Contains(nodeContains))
                             {
                                 return true;
                             }
-
                         };
                     }
                     catch (NullReferenceException)
                     {
-                        if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
-                        {
-                            return true;
-                        }
                         return false;
                     }
                     catch (WebException ex)
                     {
                         Console.WriteLine(ex);
                     }
-                    IsTrue = true;
-
                 }
-                if (retailer.Contains("argos") || retailer.Contains("game") || retailer.Contains("smyths"))
-                {
-                    return true;
-                }
+                IsTrue = true;
             }
             return false;
         }
