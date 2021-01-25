@@ -8,7 +8,7 @@ namespace StockIndicator.Web.Models
     public class StockCheckerModel
     {
 
-        public const string amazonNode = "//div";
+        public const string amazonNode = "//span[@id='submit.add-to-cart-announce']";
         public const string argosNode = "//strong";
         public const string currysNode = "//div";
         public const string gameNode = "//div";

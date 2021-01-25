@@ -113,45 +113,58 @@ namespace StockIndicator.Web.Controllers
         }
         #endregion
 
-        public static string WebResponse(string url)
+        public static string WebResponse(string url, string retailer)
         {
             string data = null;
             var status = false;
 
-            while (status == false)
+            try
             {
-                for (int i = 0; i <= 5; i++)
+                while (status == false)
                 {
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Headers["user-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    for (int i = 0; i <= 5; i++)
                     {
-                        Stream receiveStream = response.GetResponseStream();
-                        StreamReader readStream = null;
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                        if (!retailer.Contains("amazon"))
+                        {
+                            request.Headers["user-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
 
-                        if (String.IsNullOrWhiteSpace(response.CharacterSet))
-                            readStream = new StreamReader(receiveStream);
-                        else
-                            readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+                        }
+                        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                        data = readStream.ReadToEnd();
 
-                        response.Close();
-                        readStream.Close();
+                        if (response.StatusCode == HttpStatusCode.OK)
+                        {
+                            Stream receiveStream = response.GetResponseStream();
+                            StreamReader readStream = null;
+
+                            if (String.IsNullOrWhiteSpace(response.CharacterSet))
+                                readStream = new StreamReader(receiveStream);
+                            else
+                                readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+
+                            data = readStream.ReadToEnd();
+
+                            response.Close();
+                            readStream.Close();
+                        }
+
+                        if (data != null)
+                        {
+                            status = true;
+                            break;
+                        }
+                        if (i == 5)
+                        {
+                            status = true;
+                        }
                     }
+                }
+            }
+            catch (Exception ex)
+            {
 
-                    if(data != null)
-                    {
-                        status = true;
-                        break;
-                    }
-                    if(i == 5)
-                    {
-                        status = true;
-                    }
-                }             
+                Console.WriteLine(ex);
             }
             return data;
         }
@@ -159,7 +172,7 @@ namespace StockIndicator.Web.Controllers
 
             #region Stock Checker logic
 
-            [HttpPost]
+        [HttpPost]
         public static bool InStockAsync(StockCheckerModel model, List<string> urls)
         {
             var result = false;
@@ -269,7 +282,7 @@ namespace StockIndicator.Web.Controllers
             bool IsTrue = false;
             while (IsTrue == false)
             {
-                var html = WebResponse(url);
+                var html = WebResponse(url, retailer);
                 
                 if (html != null)
                 {
