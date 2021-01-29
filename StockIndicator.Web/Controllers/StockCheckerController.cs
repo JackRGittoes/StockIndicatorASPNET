@@ -128,7 +128,7 @@ namespace StockIndicator.Web.Controllers
                         if (!retailer.Contains("amazon"))
                         {
                             request.Headers["user-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)AppleWebKit / 605.1.15(KHTML, like Gecko)Version / 12.1.1 Safari / 605.1.15";
-
+                            request.Headers["referer"] = "http://www.google.com/";
                         }
                         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
